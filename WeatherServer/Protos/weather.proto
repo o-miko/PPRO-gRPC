@@ -1,0 +1,179 @@
+syntax = "proto3";
+
+option csharp_namespace = "WeatherServer.Protos";
+
+import "google/protobuf/timestamp.proto";
+
+// -------------------- Service --------------------
+
+service WeatherService {
+  // Mapuje na: current=... (Open-Meteo)
+  rpc GetCurrent (CurrentRequest) returns (CurrentResponse);
+
+  // Mapuje na: hourly=...&start=...&end=...
+  rpc GetHourly (HourlyRequest) returns (HourlyResponse);
+
+  // Mapuje na: daily=...&start=...&end=...
+  rpc GetDaily (DailyRequest) returns (DailyResponse);
+}
+
+// -------------------- Common types --------------------
+
+message Location {
+  // Open-Meteo: latitude, longitude
+  double latitude = 1;
+  double longitude = 2;
+
+  // IANA timezone string, napø. "Europe/Prague".
+  // Pokud ponecháš prázdné, Open-Meteo použije default (UTC).
+  string timezone = 3;
+}
+
+enum TempUnit {
+  TEMP_UNIT_UNSPECIFIED = 0; // default = °C v Open-Meteo
+  CELSIUS = 1;               // units=metric (implicit)
+  FAHRENHEIT = 2;            // units=imperial
+}
+
+enum WindSpeedUnit {
+  WIND_UNIT_UNSPECIFIED = 0; // default = m/s
+  MS = 1;                    // m/s -> &windspeed_unit=ms
+  KMH = 2;                   // km/h -> &windspeed_unit=kmh
+  MPH = 3;                   // mph -> &windspeed_unit=mph
+  KNOTS = 4;                 // kn  -> &windspeed_unit=kn
+}
+
+enum PrecipUnit {
+  PRECIP_UNIT_UNSPECIFIED = 0; // default = mm
+  MILLIMETER = 1;              // mm
+  INCH = 2;                    // inch
+}
+
+// -------------------- Current --------------------
+
+enum CurrentField {
+  CURRENT_FIELD_UNSPECIFIED = 0;
+  TEMPERATURE_2M = 1;       // current=temperature_2m
+  WEATHER_CODE = 2;         // current=weather_code
+  WIND_SPEED_10M = 3;       // current=wind_speed_10m
+  REL_HUMIDITY_2M = 4;      // current=relative_humidity_2m
+}
+
+message CurrentRequest {
+  Location location = 1;
+
+  // Jaká pole chceš stáhnout (Open-Meteo "current=").
+  // Nech prázdné = stáhni bìžné: TEMPERATURE_2M, WEATHER_CODE, WIND_SPEED_10M.
+  repeated CurrentField fields = 2;
+
+  TempUnit temp_unit = 3;           // volitelné; default = CELSIUS
+  WindSpeedUnit wind_speed_unit = 4; // volitelné; default = MS
+}
+
+message CurrentResponse {
+  Location location = 1;
+
+  // Èas mìøení podle Open-Meteo (pøepoètený do zadané timezone, pokud byla uvedena).
+  google.protobuf.Timestamp time = 2;
+
+  double temperature_2m = 3;
+  int32 weather_code = 4;       // viz tabulka WMO kódù Open-Meteo
+  double wind_speed_10m = 5;
+  double relative_humidity_2m = 6;
+
+  // Echo z Open-Meteo meta
+  int32 utc_offset_seconds = 15;
+  string timezone = 16;
+}
+
+// -------------------- Hourly --------------------
+
+enum HourlyField {
+  HOURLY_FIELD_UNSPECIFIED = 0;
+  H_TEMPERATURE_2M = 1;         // hourly=temperature_2m
+  H_WEATHER_CODE = 2;           // hourly=weather_code
+  H_WIND_SPEED_10M = 3;         // hourly=wind_speed_10m
+  H_REL_HUMIDITY_2M = 4;        // hourly=relative_humidity_2m
+  H_PRECIPITATION = 5;          // hourly=precipitation
+  H_PRECIPITATION_PROB = 6;     // hourly=precipitation_probability
+  H_CLOUD_COVER = 7;            // hourly=cloud_cover
+}
+
+message HourlyRequest {
+  Location location = 1;
+
+  // Interval (uzly èasu). Když necháš prázdné, použij dnešek/dnes+X dle serveru.
+  google.protobuf.Timestamp start = 2;
+  google.protobuf.Timestamp end = 3;
+
+  // Jaká pole stáhnout (Open-Meteo "hourly=").
+  repeated HourlyField fields = 4;
+
+  TempUnit temp_unit = 5;
+  WindSpeedUnit wind_speed_unit = 6;
+  PrecipUnit precip_unit = 7;
+}
+
+message HourlyDataPoint {
+  google.protobuf.Timestamp time = 1;
+
+  double temperature_2m = 2;
+  int32 weather_code = 3;
+  double wind_speed_10m = 4;
+  double relative_humidity_2m = 5;
+  double precipitation = 6;
+  int32 precipitation_probability = 7; // %
+  int32 cloud_cover = 8;               // %
+}
+
+message HourlyResponse {
+  Location location = 1;
+  repeated HourlyDataPoint data = 2;
+
+  int32 utc_offset_seconds = 15;
+  string timezone = 16;
+}
+
+// -------------------- Daily --------------------
+
+enum DailyField {
+  DAILY_FIELD_UNSPECIFIED = 0;
+  D_TEMP_MAX_2M = 1;           // daily=temperature_2m_max
+  D_TEMP_MIN_2M = 2;           // daily=temperature_2m_min
+  D_PRECIPITATION_SUM = 3;     // daily=precipitation_sum
+  D_SUNRISE = 4;               // daily=sunrise
+  D_SUNSET = 5;                // daily=sunset
+}
+
+message DailyRequest {
+  Location location = 1;
+
+  google.protobuf.Timestamp start = 2;
+  google.protobuf.Timestamp end = 3;
+
+  repeated DailyField fields = 4;
+
+  TempUnit temp_unit = 5;
+  WindSpeedUnit wind_speed_unit = 6;
+  PrecipUnit precip_unit = 7;
+}
+
+message DailyDataPoint {
+  // Doporuèenì 00:00 místní èas pro daný den.
+  google.protobuf.Timestamp date = 1;
+
+  double temperature_2m_max = 2;
+  double temperature_2m_min = 3;
+  double precipitation_sum = 4;
+
+  google.protobuf.Timestamp sunrise = 5;
+  google.protobuf.Timestamp sunset = 6;
+}
+
+message DailyResponse {
+  Location location = 1;
+  repeated DailyDataPoint data = 2;
+
+  int32 utc_offset_seconds = 15;
+  string timezone = 16;
+}

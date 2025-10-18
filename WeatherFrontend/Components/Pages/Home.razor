@@ -1,0 +1,22 @@
+﻿@page "/"
+@inject WeatherFrontend.Services.GreeterService greeterService
+@rendermode InteractiveServer
+
+<PageTitle>Home</PageTitle>
+
+<div>
+    <input type="text" @bind="Name" />
+    <button @onclick="Submit">Odeslat</button>
+    <p>@Name</p>
+    <p>@Greeting</p>
+</div>
+
+@code {
+    private string Name = string.Empty;
+    private string Greeting = string.Empty;
+
+    private async Task Submit()
+    {
+        Greeting = await greeterService.GreetAsync(Name);
+    }
+}

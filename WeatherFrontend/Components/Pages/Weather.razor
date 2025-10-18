@@ -1,0 +1,75 @@
+﻿@page "/weather"
+@using WeatherFrontend.Services
+@inject WeatherServiceImpl weatherService
+@rendermode InteractiveServer
+
+<PageTitle>Weather</PageTitle>
+
+<h1>Weather</h1>
+
+<div>
+    <p>Zadejte město:</p>
+    <input type="text" @bind="_town" />
+    <button class="btn btn-primary" @onclick="GetActualTemperature">Zobrazit aktuální teplotu</button>
+    @if (_actualTemperatureResponse != null)
+    {
+        <p>Aktuální teplota je: @_actualTemperatureResponse.Current.Temperature @_actualTemperatureResponse.CurrentUnits.Temperature</p>
+    }
+    <hr />
+    @if (_logtitude.HasValue && _latitude.HasValue)
+    {
+        <button class="btn btn-primary">Zobrazit předpověď</button>
+    }
+    <hr />
+    <InputFile OnChange="LoadImage" accept="image/*" />
+    <button @onclick="Detect">Rozpoznat</button>
+    @if (_recognizeWeatherResponse != null)
+    {
+        <p>@_recognizeWeatherResponse.Weather - @_recognizeWeatherResponse.Confidence %</p>
+    }
+</div>
+
+@code {
+    private string? _town { get; set; }
+    private float? _logtitude { get; set; } = null;
+    private float? _latitude { get; set; } = null;
+    private string? _imageDataUrl;
+    private byte[] _data = [0];
+    
+    private ActualTemperatureResponse? _actualTemperatureResponse { get; set; }
+    private ForecastResponse? _forecastResponse { get; set; }
+    private RecognizeWeatherResponse? _recognizeWeatherResponse { get; set; }
+    
+    private async Task LoadImage(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+
+        using var stream = file.OpenReadStream(maxAllowedSize: 10_000_000);
+        using var ms = new MemoryStream();
+        await stream.CopyToAsync(ms);
+        _data = ms.ToArray();
+
+        var base64 = Convert.ToBase64String(_data);
+        var contentType = file.ContentType;
+        _imageDataUrl = $"data:{contentType};base64,{base64}";
+    }
+
+    public async Task GetActualTemperature()
+    {
+        if(_town == null)
+            return;
+
+        _actualTemperatureResponse = await weatherService.GetActualTemperature(_town);
+    }
+
+    public async Task Detect()
+    {
+        if(_data.Length == 0)
+            return;
+        
+        using (MemoryStream ms = new MemoryStream(_data))
+        {
+            _recognizeWeatherResponse = await weatherService.RecognizeImage(ms);
+        }
+    }
+}

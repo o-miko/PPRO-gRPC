@@ -1,0 +1,28 @@
+﻿version: "3.9"
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: WeatherServer/Dockerfile
+    container_name: weather-backend
+    environment:
+      - ASPNETCORE_URLS=http://0.0.0.0:8080
+      - DOTNET_EnableDiagnostics=0
+    ports:
+      - "5000:8080"
+    networks: [appnet]
+
+  frontend:
+    build:
+      context: .
+      dockerfile: WeatherFrontend/Dockerfile
+    container_name: weather-frontend
+    depends_on:
+      - backend
+    ports:
+      - "8080:8080"
+    networks: [appnet]
+
+networks:
+  appnet:
+    driver: bridge

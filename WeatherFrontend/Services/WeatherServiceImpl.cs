@@ -22,7 +22,7 @@ public class WeatherServiceImpl
         });
     }
 
-    public async Task<ForecastResponse> GetForecast(float logtitude, float latitude, string startDate, string endDate, int forecastDays)
+    public async Task<ForecastResponse> GetForecast(float logtitude, float latitude, string startDate, string endDate, int forecastDays, int forecastHours)
     {
         return await _client.GetForecastAsync(new ForecastRequest()
         {
@@ -31,7 +31,8 @@ public class WeatherServiceImpl
             Timezone = "GMT",
             StartDate = startDate,
             EndDate = endDate,
-            ForecastDays = forecastDays
+            ForecastDays = forecastDays,
+            ForecastHours = forecastHours
         });
     }
 

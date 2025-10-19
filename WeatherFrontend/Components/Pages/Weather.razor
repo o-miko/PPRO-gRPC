@@ -1,4 +1,5 @@
 ﻿@page "/weather"
+@using System.Globalization
 @using WeatherFrontend.Services
 @inject WeatherServiceImpl weatherService
 @rendermode InteractiveServer
@@ -18,9 +19,43 @@
     <hr />
     @if (_logtitude.HasValue && _latitude.HasValue)
     {
-        <button class="btn btn-primary">Zobrazit předpověď</button>
+        <p>Od datumu</p>
+        <InputDate @bind-Value="_startDate" min="@todayString" class="form-control" />
+        <p>Po datum:</p>
+        <InputDate @bind-Value="_endDate" min="@todayString" class="form-control" />
+        <button class="btn btn-primary" @onclick="GetForecast">Zobrazit předpověď</button>
+
+        @if (_forecastResponse != null)
+        {
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Čas</th>
+                    <th>Pocitová teplota</th>
+                    <th>Srážky</th>
+                    <th>Relativní vlhkost</th>
+                    <th>Rychlost větru</th>
+                </tr>
+                </thead>
+                <tbody>
+                @for (int i = 0; i < _forecastResponse.Hourly.Time.Count; i++)
+                {
+                    <tr>
+                        <td>@(i+1)</td>
+                        <td>@_forecastResponse.Hourly.Time[i]</td>
+                        <td>@_forecastResponse.Hourly.ApparentTemperature[i]</td>
+                        <td>@_forecastResponse.Hourly.Precipitation[i]</td>
+                        <td>@_forecastResponse.Hourly.Relativehumidity2M[i]</td>
+                        <td>@_forecastResponse.Hourly.Windspeed10M[i]</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
     }
     <hr />
+    <img src="@_imageDataUrl"/>
     <InputFile OnChange="LoadImage" accept="image/*" />
     <button @onclick="Detect">Rozpoznat</button>
     @if (_recognizeWeatherResponse != null)
@@ -30,6 +65,9 @@
 </div>
 
 @code {
+    private string todayString = DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    private DateTime _startDate = DateTime.Today.AddDays(1);
+    private DateTime _endDate = DateTime.Today.AddDays(1);
     private string? _town { get; set; }
     private float? _logtitude { get; set; } = null;
     private float? _latitude { get; set; } = null;
@@ -52,6 +90,7 @@
         var base64 = Convert.ToBase64String(_data);
         var contentType = file.ContentType;
         _imageDataUrl = $"data:{contentType};base64,{base64}";
+        StateHasChanged();
     }
 
     public async Task GetActualTemperature()
@@ -60,6 +99,25 @@
             return;
 
         _actualTemperatureResponse = await weatherService.GetActualTemperature(_town);
+        _logtitude = _actualTemperatureResponse.Longitude;
+        _latitude = _actualTemperatureResponse.Latitude;
+        StateHasChanged();
+    }
+
+    public async Task GetForecast()
+    {
+        if (_latitude.HasValue && _logtitude.HasValue)
+        {
+            int forecastDays = (_endDate - _startDate).Days;
+            _forecastResponse = await weatherService.GetForecast(
+                _latitude.Value,
+                _logtitude.Value,
+                _startDate.ToString("yyyy-MM-dd"),
+                _endDate.ToString("yyyy-MM-dd"),
+                forecastDays,
+                forecastHours: 0
+            );
+        }
     }
 
     public async Task Detect()

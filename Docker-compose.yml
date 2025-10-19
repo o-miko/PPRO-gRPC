@@ -1,16 +1,16 @@
-﻿version: "3.9"
-services:
+﻿services:
   backend:
     build:
       context: .
       dockerfile: WeatherServer/Dockerfile
     container_name: weather-backend
     environment:
-      - ASPNETCORE_URLS=http://0.0.0.0:8080
+      - ASPNETCORE_URLS=http://0.0.0.0:5214
+      - ASPNETCORE_ENVIRONMENT=Production
       - DOTNET_EnableDiagnostics=0
     ports:
-      - "5000:8080"
-    networks: [appnet]
+      - "5214:5214"
+    restart: unless-stopped
 
   frontend:
     build:
@@ -19,10 +19,15 @@ services:
     container_name: weather-frontend
     depends_on:
       - backend
+    environment:
+      - ASPNETCORE_URLS=http://0.0.0.0:8080
+      - Grpc__WeatherUrl=http://backend:5214
+      - DOTNET_SYSTEM_NET_HTTP_SOCKETSHTTPHANDLER_HTTP2UNENCRYPTEDSUPPORT=true
     ports:
       - "8080:8080"
-    networks: [appnet]
+    volumes:
+      - dp-keys:/root/.aspnet/DataProtection-Keys
+    restart: unless-stopped
 
-networks:
-  appnet:
-    driver: bridge
+volumes:
+  dp-keys:

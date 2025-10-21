@@ -9,25 +9,37 @@
 <h1>Weather</h1>
 
 <div>
-    <p>Zadejte město:</p>
-    <input type="text" @bind="_town" />
-    <button class="btn btn-primary" @onclick="GetActualTemperature">Zobrazit aktuální teplotu</button>
+    <p class="mb-1">Zadejte město:</p>
+    <div class="divWithInputCity mb-4">
+        <input class="form-control inputCity" type="text" @bind="_town" @onkeydown="HandleKeyDown"/>
+        <button class="btn btn-primary px-4" @onclick="GetActualTemperature">Zobrazit aktuální teplotu</button>
+    </div>
+    
     @if (_actualTemperatureResponse != null)
     {
-        <p>Aktuální teplota je: @_actualTemperatureResponse.Current.Temperature @_actualTemperatureResponse.CurrentUnits.Temperature</p>
+        <p>Aktuální teplota je: <b>@_actualTemperatureResponse.Current.Temperature @_actualTemperatureResponse.CurrentUnits.Temperature</b></p>
     }
-    <hr />
+    <hr/>
     @if (_logtitude.HasValue && _latitude.HasValue)
     {
-        <p>Od datumu</p>
-        <InputDate @bind-Value="_startDate" min="@todayString" class="form-control" />
-        <p>Po datum:</p>
-        <InputDate @bind-Value="_endDate" min="@todayString" class="form-control" />
-        <button class="btn btn-primary" @onclick="GetForecast">Zobrazit předpověď</button>
+        <div class="divDates">
+            <div class="mb-2">
+                <p class="mb-1">Od datumu</p>
+                <InputDate @bind-Value="_startDate" min="@todayString" class="form-control flatpickr-input"/>
+            </div>
+            <div>
+                <p class="mb-1">Po datum:</p>
+                <InputDate @bind-Value="_endDate" min="@todayString" class="form-control"/>
+            </div>
+        </div>
+        <div class="w-100 d-flex mt-2 divViewWeather">
+            <button class="btn btn-primary m-auto" @onclick="GetForecast">Zobrazit předpověď</button>
+        </div>
+        
 
         @if (_forecastResponse != null)
         {
-            <table class="table">
+            <table class="table mt-2">
                 <thead>
                 <tr>
                     <th>#</th>
@@ -42,7 +54,7 @@
                 @for (int i = 0; i < _forecastResponse.Hourly.Time.Count; i++)
                 {
                     <tr>
-                        <td>@(i+1)</td>
+                        <td>@(i + 1)</td>
                         <td>@_forecastResponse.Hourly.Time[i]</td>
                         <td>@_forecastResponse.Hourly.ApparentTemperature[i]</td>
                         <td>@_forecastResponse.Hourly.Precipitation[i]</td>
@@ -54,14 +66,34 @@
             </table>
         }
     }
-    <hr />
-    <img src="@_imageDataUrl"/>
-    <InputFile OnChange="LoadImage" accept="image/*" />
-    <button @onclick="Detect">Rozpoznat</button>
-    @if (_recognizeWeatherResponse != null)
-    {
-        <p>@_recognizeWeatherResponse.Weather - @_recognizeWeatherResponse.Confidence %</p>
-    }
+    <hr/>
+    
+    <div class="mb-5 d-flex flex-column">
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Vyberte obrázek k rozpoznání počasí</label>
+            @* <input class="form-control" type="file" id="formFile"> *@
+            <InputFile OnChange="LoadImage" accept="image/*" class="form-control" id="formFile"/>
+            
+        </div>
+        <div class="d-flex flex-row">
+            <div class="divMyImage">
+                <img src="@_imageDataUrl" class="myImage"/>
+            </div>
+            
+
+            <div class="divButtonAndAnswer d-flex flex-column mt-4">
+                <button class="btn btn-primary" @onclick="Detect" title="Rozpoznat počasí na obrázku">Rozpoznat obrázek</button>
+
+                @if (_recognizeWeatherResponse != null)
+                {
+                    <p class="pAnswer">@_recognizeWeatherResponse.Weather - @_recognizeWeatherResponse.Confidence %</p>
+                }
+            </div>
+        </div>
+    </div>
+    
+    
+    
 </div>
 
 @code {
@@ -82,7 +114,7 @@
     {
         var file = e.File;
 
-        using var stream = file.OpenReadStream(maxAllowedSize: 10_000_000);
+        using var stream = file.OpenReadStream(maxAllowedSize: 50_000_000);
         using var ms = new MemoryStream();
         await stream.CopyToAsync(ms);
         _data = ms.ToArray();
@@ -91,6 +123,14 @@
         var contentType = file.ContentType;
         _imageDataUrl = $"data:{contentType};base64,{base64}";
         StateHasChanged();
+    }
+    
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await GetActualTemperature();
+        }
     }
 
     public async Task GetActualTemperature()

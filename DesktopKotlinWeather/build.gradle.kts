@@ -56,28 +56,6 @@ protobuf {
     }
 }
 
-//protobuf {
-//    protoc {
-//        artifact = "com.google.protobuf:protoc:3.25.3"
-//    }
-//    plugins {
-//        id("grpc") {
-//            artifact = "io.grpc:protoc-gen-grpc-java:1.63.0"
-//        }
-//        id("grpckt") {
-//            artifact = "io.grpc:protoc-gen-grpc-kotlin:1.4.1:jdk8@jar"
-//        }
-//    }
-//    generateProtoTasks {
-//        all().forEach { task ->
-//            task.plugins {
-//                id("grpc")
-//                id("grpckt")
-//            }
-//        }
-//    }
-//}
-
 compose.desktop {
     application {
         mainClass = "MainKt"

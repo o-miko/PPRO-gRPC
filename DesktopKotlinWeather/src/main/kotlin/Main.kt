@@ -1,5 +1,3 @@
-
-
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
@@ -39,10 +37,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.window.rememberWindowState
 import io.grpc.ManagedChannelBuilder
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import service.WeatherServiceImpl
 import weather.Weather
 import weather.WeatherServiceGrpcKt
@@ -51,13 +46,12 @@ import java.time.temporal.ChronoUnit
 
 @Composable
 @Preview
-fun WeatherApp() {
+fun App() {
     var town by remember { mutableStateOf("") }
     var currentTemperature by remember { mutableStateOf<String?>(null) }
     var responseCurrentTemperature by remember { mutableStateOf<Weather.ActualTemperatureResponse?>(null) }
     var forecasts by remember { mutableStateOf<Weather.ForecastResponse?>(null) }
 
-    val padding = 8.dp
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
     val inputDateFormatter = DateTimeFormatter.ofPattern("d. M. yyyy")
@@ -81,7 +75,7 @@ fun WeatherApp() {
             modifier = Modifier.fillMaxSize()
         ) {
             Column(
-                modifier = Modifier.padding(padding * 2).fillMaxSize().verticalScroll(scrollState),
+                modifier = Modifier.padding(16.dp).fillMaxSize().verticalScroll(scrollState),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Název města
@@ -92,7 +86,7 @@ fun WeatherApp() {
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(0.7f)
                 )
-                Spacer(Modifier.height(padding / 2))
+                Spacer(Modifier.height(4.dp))
                 // Tlačítko pro načtení aktuální teploty z gRPC serveru
                 Button(onClick = {
                     // Načtení aktuální teploty
@@ -111,7 +105,7 @@ fun WeatherApp() {
                 }) {
                     Text("Zobrazit aktuální teplotu")
                 }
-                Spacer(Modifier.height(padding))
+                Spacer(Modifier.height(8.dp))
 
 
                 // Výstupní text aktuální teplota
@@ -137,7 +131,7 @@ fun WeatherApp() {
                 }
 
 
-                Spacer(Modifier.height(padding * 2))
+                Spacer(Modifier.height(16.dp))
 
 
                 // Datumy od po - vedle sebe
@@ -158,7 +152,7 @@ fun WeatherApp() {
                         modifier = Modifier.weight(1f)
                     )
                 }
-                Spacer(Modifier.height(padding / 2))
+                Spacer(Modifier.height(4.dp))
                 // Tlačítko pro zobrazení předpovědi po hodinách
                 Button(onClick = {
                     coroutineScope.launch {
@@ -224,14 +218,14 @@ fun WeatherApp() {
                     }
                 }
 
-                Spacer(Modifier.height(padding * 2))
+                Spacer(Modifier.height(16.dp))
 
 
                 // Tabulka s výsledky předpovědi počasí
                 val hourly = forecasts?.hourly
                 if (forecasts?.isInitialized ?: false && hourly != null) {
                     Text("Předpověď počasí", style = MaterialTheme.typography.h6)
-                    Spacer(Modifier.height(padding))
+                    Spacer(Modifier.height(8.dp))
 
                     // Box kvůli overlay scrollbaru
                     Box(
@@ -286,7 +280,7 @@ fun WeatherApp() {
                             adapter = rememberScrollbarAdapter(listState)
                         )
                     }
-                    Spacer(Modifier.height(padding / 2))
+                    Spacer(Modifier.height(4.dp))
                 }
 
 
@@ -413,6 +407,6 @@ fun main() = application {
             height = 900.dp
         )
     ) {
-        WeatherApp()
+        App()
     }
 }

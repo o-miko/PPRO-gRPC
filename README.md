@@ -599,6 +599,8 @@ fun App() {
 
 ### Krok 5 (volitelné): Úprava funkce main() o title a defaultní rozměry okna aplikace
 
+Metoda `main()` slouží jako vstupní bod pro spuštění celé desktopové aplikace a k definování vlastností jejího hlavního okna, jako je název (title) nebo výchozí rozměry.
+
 ```kotlin
 fun main() = application {
     Window(

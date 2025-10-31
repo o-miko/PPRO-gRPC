@@ -240,7 +240,57 @@ Zde musíte rozšířit vygenerovanou funkci `@Composable fun App()` tak, aby ob
 
 Vaším úkolem je propojit UI komponenty s logikou ve `WeatherServiceImpl`, abyste mohli odesílat požadavky na běžící gRPC server a zobrazovat přijaté výsledky. (Nezapomeňte si vytvořit gRPC kanál `ManagedChannel` směřující na `localhost:5214` a vytvořit instanci `WeatherServiceImpl`.)
 
+Metoda `main()` slouží jako vstupní bod pro spuštění celé desktopové aplikace a k definování vlastností jejího hlavního okna, jako je název (title) nebo výchozí rozměry.
+volitelně: Úprava funkce main() o title a defaultní rozměry okna aplikace
+
+Výsledný kód třídy `Main.kt` vypadá následovně:
 ```kotlin
+import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.Button
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.application
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollbarAdapter
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.toComposeImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import org.jetbrains.skia.Image
+import java.awt.FileDialog
+import java.awt.Frame
+import java.io.File
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.window.rememberWindowState
+import io.grpc.ManagedChannelBuilder
+import kotlinx.coroutines.launch
+import service.WeatherServiceImpl
+import weather.Weather
+import weather.WeatherServiceGrpcKt
+import java.time.temporal.ChronoUnit
+
+
 @Composable
 @Preview
 fun App() {
@@ -249,7 +299,6 @@ fun App() {
     var responseCurrentTemperature by remember { mutableStateOf<Weather.ActualTemperatureResponse?>(null) }
     var forecasts by remember { mutableStateOf<Weather.ForecastResponse?>(null) }
 
-    val padding = 8.dp
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
     val inputDateFormatter = DateTimeFormatter.ofPattern("d. M. yyyy")
@@ -273,7 +322,7 @@ fun App() {
             modifier = Modifier.fillMaxSize()
         ) {
             Column(
-                modifier = Modifier.padding(padding * 2).fillMaxSize().verticalScroll(scrollState),
+                modifier = Modifier.padding(16.dp).fillMaxSize().verticalScroll(scrollState),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Název města
@@ -284,7 +333,7 @@ fun App() {
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(0.7f)
                 )
-                Spacer(Modifier.height(padding / 2))
+                Spacer(Modifier.height(4.dp))
                 // Tlačítko pro načtení aktuální teploty z gRPC serveru
                 Button(onClick = {
                     // Načtení aktuální teploty
@@ -303,7 +352,7 @@ fun App() {
                 }) {
                     Text("Zobrazit aktuální teplotu")
                 }
-                Spacer(Modifier.height(padding))
+                Spacer(Modifier.height(8.dp))
 
 
                 // Výstupní text aktuální teplota
@@ -329,7 +378,7 @@ fun App() {
                 }
 
 
-                Spacer(Modifier.height(padding * 2))
+                Spacer(Modifier.height(16.dp))
 
 
                 // Datumy od po - vedle sebe
@@ -350,7 +399,7 @@ fun App() {
                         modifier = Modifier.weight(1f)
                     )
                 }
-                Spacer(Modifier.height(padding / 2))
+                Spacer(Modifier.height(4.dp))
                 // Tlačítko pro zobrazení předpovědi po hodinách
                 Button(onClick = {
                     coroutineScope.launch {
@@ -416,14 +465,14 @@ fun App() {
                     }
                 }
 
-                Spacer(Modifier.height(padding * 2))
+                Spacer(Modifier.height(16.dp))
 
 
                 // Tabulka s výsledky předpovědi počasí
                 val hourly = forecasts?.hourly
                 if (forecasts?.isInitialized ?: false && hourly != null) {
                     Text("Předpověď počasí", style = MaterialTheme.typography.h6)
-                    Spacer(Modifier.height(padding))
+                    Spacer(Modifier.height(8.dp))
 
                     // Box kvůli overlay scrollbaru
                     Box(
@@ -478,7 +527,7 @@ fun App() {
                             adapter = rememberScrollbarAdapter(listState)
                         )
                     }
-                    Spacer(Modifier.height(padding / 2))
+                    Spacer(Modifier.height(4.dp))
                 }
 
 
@@ -595,13 +644,7 @@ fun App() {
         }
     }
 }
-```
 
-### Krok 5 (volitelné): Úprava funkce main() o title a defaultní rozměry okna aplikace
-
-Metoda `main()` slouží jako vstupní bod pro spuštění celé desktopové aplikace a k definování vlastností jejího hlavního okna, jako je název (title) nebo výchozí rozměry.
-
-```kotlin
 fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,

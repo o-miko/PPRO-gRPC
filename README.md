@@ -69,7 +69,11 @@ Tímto postupem vám IntelliJ IDEA vygeneruje základní šablonu projektu se so
 
 ### Krok 2: Úprava souboru build.gradle.kts
 
-Soubor `build.gradle.kts` slouží ke správě závislostí a konfiguraci celého projektu, včetně toho, jak se projekt sestavuje. Nově vytvořený projekt již tento soubor obsahuje, ale musíme ho rozšířit o pluginy a závislosti nezbytné pro gRPC a Protobuf. Výsledný kód tohoto souboru by měl vypadat takto:
+1.  Soubor `build.gradle.kts` slouží ke správě závislostí a konfiguraci celého projektu, včetně toho, jak se projekt sestavuje. Nově vytvořený projekt již tento soubor obsahuje, ale musíme ho rozšířit o pluginy a závislosti nezbytné pro gRPC a Protobuf.
+2.  Po zkopírování níže uvedeného kódu do vašeho `build.gradle.kts` souboru si všimněte, že IDE (IntelliJ IDEA) pravděpodobně zobrazí v pravém horním rohu ikonu pro **"Load Gradle Changes"** (Nahrát Gradle změny). Je **nutné** na tuto ikonu kliknout. Tímto krokem donutíte IDE, aby stáhlo všechny nové závislosti (knihovny pro gRPC), které jsme právě přidali.
+3.  Po úspěšném stažení závislostí **doporučujeme projekt poprvé spustit** (nebo alespoň sestavit pomocí `Build > Build Project`). Tím se spustí `protobuf` plugin, který automaticky vygeneruje potřebné třídy z `.proto` souboru (`Weather` a `WeatherServiceGrpcKt`). Bez tohoto kroku by vám IDE hlásilo chyby, že třídy jako `WeatherServiceGrpcKt` neexistují.
+
+Výsledný kód tohoto souboru by měl vypadat takto:
 
 ```kotlin
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat

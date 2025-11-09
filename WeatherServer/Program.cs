@@ -4,7 +4,11 @@ using WeatherServer.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddGrpc();
+builder.Services.AddGrpc(options =>
+{
+    options.MaxReceiveMessageSize = 40 * 1024 * 1024; //40MB
+    options.MaxSendMessageSize = 40 * 1024 * 1024;  //40MB
+});
 builder.Services.AddMapster();
 MappingConfig.RegisterMappings();
 

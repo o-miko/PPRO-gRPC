@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+option csharp_namespace = "WeatherFrontend";
+
+package weather;
+
+message HourlyUnits {
+  string time = 1;
+  string temperature_2m = 2;
+  string relative_humidity_2m = 3;
+  string precipitation = 4;
+  string windspeed_10m = 5;
+  string weathercode = 6;
+}
+
+message Location {
+  string town = 1;
+}
+
+message ActualTemperatureRequest {
+  Location location = 1;
+}
+
+message CurrentData {
+  float temperature = 1;
+  string time = 2;
+}
+
+message CurrentUnits {
+  string temperature = 1;
+  string time = 2;
+}
+
+message ActualTemperatureResponse {
+  float latitude = 1;
+  float longitude = 2;
+  float generation_time_ms = 3;
+  int32 utc_offset_seconds = 4;
+  string timezone = 5;
+  string timezone_abbreviation = 6;
+  float elevation = 7;
+
+  CurrentData current = 8;
+  CurrentUnits current_units = 9;
+
+  HourlyData hourly = 10;
+  HourlyUnits hourly_units = 11;
+}
+
+message ForecastRequest {
+  float latitude = 1;
+  float longitude = 2;
+  string timezone = 3;
+
+  int32 forecast_hours = 4;
+  int32 forecast_days = 5;
+
+  string start_date = 6;
+  string end_date = 7;
+}
+
+message HourlyData {
+  repeated string time = 1;
+  repeated float temperature_2m = 2;
+  repeated float apparent_temperature = 3;
+  repeated int32 relativehumidity_2m = 4;
+  repeated float precipitation = 5;
+  repeated float windspeed_10m = 6;
+  repeated int32 weathercode = 7;
+}
+
+
+message ForecastResponse {
+  double latitude = 1;
+  double longitude = 2;
+  double elevation = 3;
+  HourlyData hourly = 4;
+}
+
+message RecognizeWeatherRequest {
+  bytes image = 1;
+}
+
+message RecognizeWeatherResponse {
+  string weather = 1;
+  float confidence = 2;
+}
+
+service WeatherService {
+  rpc GetActualTemperature (ActualTemperatureRequest) returns (ActualTemperatureResponse);
+  rpc GetForecast (ForecastRequest) returns (ForecastResponse);
+  rpc RecognizeWeather (RecognizeWeatherRequest) returns (RecognizeWeatherResponse);
+}

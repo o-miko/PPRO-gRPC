@@ -6,7 +6,6 @@ plugins {
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.protobuf") version "0.9.4"
-//    application
 }
 
 group = "cz.uhk.fim"

@@ -10,6 +10,7 @@ Aplikace je rozdělena na dvě hlavní části:
 ---
 
 ## 1. Ukázková část (Demo)
+❗**Demo aplikaci lze nalézt na:** http://165.232.64.242/ ❗
 
 Tato část se skládá ze dvou oddělených aplikací, které běží ve vlastních Docker kontejnerech:
 

@@ -822,3 +822,5 @@ fun main() = application {
 
 ```
 
+## Příklad z praxe
+https://github.com/FgForrest/evitalab

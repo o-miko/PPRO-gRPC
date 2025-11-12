@@ -53,6 +53,8 @@ V této části je vaším úkolem naprogramovat novou desktopovou aplikaci v Ko
 
 Aplikace se bude připojovat na **backend gRPC server** (z Části 1), který již běží v Dockeru a vystavuje své služby na portu **`5214`**.
 
+Alternativní gRPC server (pokud nefunguje Docker): **`165.232.64.242`**, port: **`8080`**
+
 ### Krok 1: Vytvoření projektu
 
 Pro vytvoření projektu použijeme IntelliJ IDEA a její vestavěný generátor.
